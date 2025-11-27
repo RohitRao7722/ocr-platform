@@ -1,108 +1,18 @@
-# Render Blueprint for OCR Platform Backend
 services:
-  # FastAPI Backend Service
   - type: web
     name: ocr-platform-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./Dockerfile
     dockerContext: ./backend
     plan: free
-    region: oregon
-    branch: main
-    healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
-        value: false
-      - key: APP_NAME
-        value: OCR Platform
-      - key: APP_VERSION
-        value: 1.0.0
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ocr-platform-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
+        value: "False"
       - key: UPLOAD_DIR
         value: /app/uploads
-      - key: MAX_UPLOAD_SIZE
-        value: 20971520
-      - key: ALLOWED_EXTENSIONS
-        value: '["jpg","jpeg","png","pdf","tiff","bmp"]'
       - key: DEFAULT_OCR_ENGINE
         value: paddleocr
       - key: OCR_LANGUAGE
         value: en
-      - key: TESSERACT_ENABLED
-        value: true
-      - key: TESSERACT_CMD
-        value: /usr/bin/tesseract
-      - key: OCR_CONFIDENCE_THRESHOLD
-        value: 0.7
-      - key: SECRET_KEY
-        generateValue: true  # Auto-generates secure secret key
-      - key: CELERY_BROKER_URL
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
-      - key: CELERY_RESULT_BACKEND
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
-
-  # PostgreSQL Database
-  - type: pserv
-    name: ocr-platform-db
-    plan: free
-    databaseName: ocr_db
-    databaseUser: ocr_user
-    region: oregon
-    ipAllowList: []
-
-  # Redis Cache & Task Queue
-  - type: redis
-    name: ocr-platform-redis
-    plan: free  # 90 days free, then upgrade
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []
-
-  # Celery Worker (Background Tasks)
-  - type: worker
-    name: ocr-platform-worker
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: free
-    region: oregon
-    branch: main
-    dockerCommand: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
-    envVars:
-      - key: ENVIRONMENT
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ocr-platform-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
-      - key: CELERY_BROKER_URL
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
-      - key: CELERY_RESULT_BACKEND
-        fromService:
-          type: redis
-          name: ocr-platform-redis
-          property: connectionString
