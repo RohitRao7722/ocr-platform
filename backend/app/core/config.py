@@ -7,10 +7,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./ocr.db"
 
     # Redis
-    REDIS_URL: str
+    REDIS_URL: str = "redis://localhost:6379/0"
 
     # Application
     ENVIRONMENT: str = "development"
@@ -33,11 +33,11 @@ class Settings(BaseSettings):
     TESSERACT_CMD: str = "tesseract"  # Will use system PATH
 
     # Celery Settings
-    CELERY_BROKER_URL: str
-    CELERY_RESULT_BACKEND: str
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
 
     # Security
-    SECRET_KEY: str
+    SECRET_KEY: str = "dev-secret-key-change-in-production"
 
     @field_validator("ALLOWED_EXTENSIONS", mode="before")
     @classmethod
