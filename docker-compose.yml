@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ocr_postgres
+    environment:
+      POSTGRES_DB: ocr_db
+      POSTGRES_USER: ocr_user
+      POSTGRES_PASSWORD: ocr_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ocr_user -d ocr_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ocr_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ocr_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ocr_uploads:/app/uploads
+    environment:
+      DATABASE_URL: postgresql://ocr_user:ocr_password@postgres:5432/ocr_db
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ocr_celery_worker
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4
+    volumes:
+      - ./backend:/app
+      - ocr_uploads:/app/uploads
+    environment:
+      DATABASE_URL: postgresql://ocr_user:ocr_password@postgres:5432/ocr_db
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+  ocr_uploads:
