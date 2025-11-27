@@ -1,15 +1,13 @@
 # Render Blueprint for OCR Platform Backend
-# This file defines all services needed for the backend deployment
-
 services:
   # FastAPI Backend Service
   - type: web
     name: ocr-platform-backend
-    env: docker
+    runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: free  # Change to 'starter' ($7/month) for always-on
-    region: oregon  # Choose: oregon, frankfurt, singapore
+    plan: free
+    region: oregon
     branch: main
     healthCheckPath: /health
     envVars:
@@ -62,11 +60,11 @@ services:
   # PostgreSQL Database
   - type: pserv
     name: ocr-platform-db
-    plan: free  # 90 days free, then upgrade
+    plan: free
     databaseName: ocr_db
     databaseUser: ocr_user
     region: oregon
-    ipAllowList: []  # Empty = allow all IPs
+    ipAllowList: []
 
   # Redis Cache & Task Queue
   - type: redis
@@ -79,7 +77,7 @@ services:
   # Celery Worker (Background Tasks)
   - type: worker
     name: ocr-platform-worker
-    env: docker
+    runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: free
