@@ -43,10 +43,15 @@ app = FastAPI(
 
 # Configure CORS (Cross-Origin Resource Sharing) middleware
 # Allows frontend applications from different origins to access the API
-# TODO: In production, restrict allow_origins to specific domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (development only)
+    allow_origins=[
+        "http://localhost:5173",  # Local development
+        "http://localhost:3000",
+        "https://ocr-platform.vercel.app",  # Production frontend
+        "https://ocr-platform-git-main-rohits-projects-4a9c7d0b.vercel.app",  # Vercel preview
+        "https://ocr-platform-lz5n9gor-rohits-projects-4a9c7d0b.vercel.app",  # Vercel preview
+    ],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
